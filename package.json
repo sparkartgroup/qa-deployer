@@ -1,0 +1,16 @@
+{
+  "name": "sparkart-site-deployer",
+  "version": "0.0.0",
+  "description": "Hosts pull requests for review.",
+  "main": "deploy.js",
+  "bin": {
+    "curvature-deploy": "./deploy.js"
+  },
+  "preferGlobal": true,
+  "author": "pushred",
+  "dependencies": {
+    "unirest": "~0.1.1",
+    "request": "~2.33.0",
+    "cli-color": "0.2.x"
+  }
+}
