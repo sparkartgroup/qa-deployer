@@ -1,0 +1,75 @@
+#!/usr/bin/env node
+
+var qa_deployer = require('../qa-deployer.js')
+var github_api = require('../src/utils/github-api.js')
+var extend = require('extend')
+var fs = require('fs')
+var parseArgs = require('minimist')
+
+var getEnv = function(name) {
+  if (!process.env[name]) {
+    throw new Error('Missing environment variable: ' + name)
+  } else {
+    return process.env[name]
+  }
+}
+
+var getScriptOptions = function() {
+  var script_options = {deployer: {}, notifiers: []}
+  var file = parseArgs(process.argv)['options-from']
+  if (file) {
+    script_options = extend(script_options, JSON.parse(fs.readFileSync(file)))
+  }
+  return script_options
+}
+
+var github_branch = getEnv('CIRCLE_BRANCH'),
+    modulus_options = {auth: {username: getEnv('MODULUS_USERNAME'), password: getEnv('MODULUS_PASSWORD')}, project: github_branch},
+    github_options = {auth: {user: getEnv('GITHUB_USER'), pass: getEnv('GITHUB_PASS')}, owner: getEnv('CIRCLE_PROJECT_USERNAME'), repo: getEnv('CIRCLE_PROJECT_REPONAME')},
+    script_options = getScriptOptions()
+
+console.log('Retrieving GitHub pull request for branch: ' + github_branch)
+github_api.getPullRequestByBranch(extend(github_options, {branch: github_branch}), function(pull_request) {
+  if (!pull_request) return console.log("Can't find GitHub pull request")
+
+  var options = {
+    deployer: extend(script_options.deployer, modulus_options, {service: 'modulus'}),
+    notifiers: []
+  }
+
+  script_options.notifiers.forEach(function(notifier) {
+    switch(notifier.service) {
+    case 'github-pull-request':
+      notifier = extend(notifier, github_options, {
+        pull_request: pull_request.number,
+        comment: function(review_url) {
+          return '**Ready for review at ' + review_url + '**\n\n-------------\nAutomatically deployed by CircleCI using [qa-deployer](https://github.com/SparkartGroupInc/qa-deployer)'
+        }
+      })
+      break
+    case 'webhook':
+      notifier = extend(notifier, {
+        body: function(review_url) {
+          return {
+            github_owner: github_options.owner,
+            github_repo: github_options.repo,
+            github_branch: github_branch,
+            github_pull_request: {
+              url: pull_request.html_url,
+              title: pull_request.title
+            },
+            github_push: {
+              compare_url: process.env['CIRCLE_COMPARE_URL'],
+              username: process.env['CIRCLE_USERNAME']
+            },
+            review_url: review_url
+          }
+        }
+      })
+      break
+    }
+    options.notifiers.push(notifier)
+  })
+
+  qa_deployer.deploy(options)
+})
