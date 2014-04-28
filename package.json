@@ -11,6 +11,7 @@
   "dependencies": {
     "unirest": "~0.1.1",
     "request": "~2.33.0",
-    "cli-color": "0.2.x"
+    "cli-color": "0.2.x",
+    "sync": "~0.2.2"
   }
 }

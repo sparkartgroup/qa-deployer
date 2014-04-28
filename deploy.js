@@ -1,122 +1,117 @@
 var ORG = process.env.CIRCLE_PROJECT_USERNAME,
     REPO = process.env.CIRCLE_PROJECT_REPONAME,
     BRANCH = process.env.CIRCLE_BRANCH,
-    MODULUS_TOKEN = process.env.MODULUS_TOKEN,
-    GITHUB_TOKEN = process.env.GITHUB_TOKEN,
-    DOMAIN = '',
-    PROJECT,
-    PR
+    MODULUS_USERNAME = process.env.MODULUS_USERNAME,
+    MODULUS_PASSWORD = process.env.MODULUS_PASSWORD,
+    GITHUB_USER = process.env.GITHUB_USER,
+    GITHUB_TOKEN = process.env.GITHUB_TOKEN
 
 var spawn = require('child_process').spawn,
     request = require('request'),
-    color = require('cli-color')
+    color = require('cli-color'),
+    crypto = require('crypto'),
+    Sync = require('sync')
 
-var user_agent = { "User-Agent": "Sparkart Site Deployer" },
-    github_auth = { "user": "pushred", "pass": GITHUB_TOKEN, "sendImmediately": true }
+var modulus_user_id,
+    modulus_token,
+    user_agent = { "User-Agent": "Sparkart Site Deployer" },
+    github_auth = { "user": GITHUB_USER, "pass": GITHUB_TOKEN, "sendImmediately": true }
 
 var update = color.xterm(44),
     success = color.xterm(49),
     error = color.xterm(202),
     warn = color.xterm(220)
 
-var addUrl = function(){
+var authenticateModulusUser = function() {
+  var hashed_password = crypto.createHash('sha512').update(MODULUS_PASSWORD).digest('hex')
+  var body = srequest(
+    'https://api.onmodulus.net/user/authenticate',
+    {method: 'POST', json: true, form: {login: MODULUS_USERNAME, password: hashed_password}})
 
-    // Get domain
-    request.get('https://sparkart-api.curvature.io/user/1/projects', {
-        json: true,
-        qs: { authToken: MODULUS_TOKEN }
-    }, function( e, response, body ){
-
-        matches = body.filter(function( project ){
-            return project.name === BRANCH ? true : false
-        })
-
-        if( matches.length > 0 ){
-            DOMAIN = "http://" + matches[0].domain
-            console.log(success("\u2713 pull request is now hosted at: " + DOMAIN))
-
-            // Find branch pull request
-            request.get('https://api.github.com/repos/' + ORG + '/' + REPO + '/pulls', {
-                auth: github_auth,
-                headers: user_agent,
-                json: true
-            }, function( e, response, body ){
-
-                matches = body.filter(function( pull_request ){
-                    return pull_request.head.ref === BRANCH ? true : false
-                })
-
-                PR = matches[0]
-
-                if( PR ){
-                    var updated = JSON.stringify({ "body": "**" + DOMAIN + "**\n\n---\n\n" + PR.body })
-
-                    request.patch(PR.url, {
-                        auth: github_auth,
-                        headers: user_agent,
-                        json: true,
-                        body: updated
-                    }, function(){
-                        console.log(success("\u2713 pull request updated with review URL"))
-                    })
-
-                } else {
-                    console.error(error("! pull request not found, something isn't quite right..."))
-                }
-
-            })
-
-        }
-
-    })
-
+  modulus_user_id = body.id
+  modulus_token = body.authToken
 }
 
-console.log(update('Looking for ' + BRANCH + ' project...'))
+var getModulusProject = function() {
+  var body = srequest(
+    'https://api.onmodulus.net/user/' + modulus_user_id + '/projects',
+    {json: true, qs: {authToken: modulus_token}})
 
-// Look for a project with a name matching the branch
-request.get('https://sparkart-api.curvature.io/user/1/projects', {
-    json: true,
-    qs: { authToken: MODULUS_TOKEN }
-}, function( error, response, body ){
+  return body.filter(function(project) {return project.name === BRANCH})[0]
+}
 
-    // Deploy with Modulus CLI
-    var deploy = spawn('modulus', ['deploy', '-p', BRANCH, '--include-modules'])
+var createModulusProject = function() {
+  srequest(
+    'https://api.onmodulus.net/project/create',
+    {method: 'POST', json: true, qs: {authToken: modulus_token}, form: {name: BRANCH, creator: modulus_user_id}})
+}
 
-    matches = body.filter(function( project ){
-        return project.name === BRANCH ? true : false
-    })
+var deployBranch = function(callback) {
+  var args = ['deploy', '-p', BRANCH]
+  if (BRANCH == 'master') {
+    args.push('--include-modules')
+  }
 
-    PROJECT = matches[0]
+  var deploy = spawn('modulus', args)
+  var waiter = new Sync.Future()
 
-    if( !PROJECT ){
-        console.log(warn('Project not found, creating...'))
+  deploy.stdout.pipe(process.stdout)
+  deploy.stderr.pipe(process.stderr)
+  deploy.on('close', function(code) {
+    if (code > 0) throw new Error("Can't deploy to Modulus: " + code)
+    waiter() // Deploy is done
+  })
 
-        var new_project = {
-            "name": BRANCH,
-            "creator": "1" // TODO: scope to a user per client
-        }
+  waiter.result // Wait until deploy is done
+}
 
-        request.post('https://sparkart-api.curvature.io/project/create', {
-            qs: { authToken: MODULUS_TOKEN },
-            form: new_project
-        }, function( e, response, body ){
-            console.info(JSON.stringify(body, null, 4))
-            setTimeout(function(){
-                console.info(success('\u2713 Project created, deploying...'))
-                deploy
-            }, 5000)
-        })
-    } else {
-        console.info(warn('\u2713 Project found, deploying...'))
-        DOMAIN = PROJECT.domain
-        deploy
-    }
+var addProjectUrlToPullRequest = function() {
+  var url = "http://" + getModulusProject().domain
+  var pull_request = getPullRequest();
+  if (!pull_request) throw new Error("Can't find pull request")
+  commentPullRequest(pull_request, 'Your branch is ready for review at ' + url + '.\n\n~ Your Friendly Site Deployer')
+}
 
-    deploy.stdout.pipe(process.stdout)
+var getPullRequest = function() {
+  var body = srequest(
+    'https://api.github.com/repos/' + ORG + '/' + REPO + '/pulls',
+    {json: true, auth: github_auth, headers: user_agent})
 
-    deploy.stdout.on('close', function( code ){
-        if( !DOMAIN ) addUrl()
-    })
+  return body.filter(function(pull_request) {return pull_request.head.ref === BRANCH})[0]
+}
 
-})
+var commentPullRequest = function(pull_request, body) {
+  srequest(
+    'https://api.github.com/repos/' + ORG + '/' + REPO + '/issues/' + pull_request.number + '/comments',
+    {method: 'POST', json: true, auth: github_auth, headers: user_agent, body: {body: body}},
+    201)
+}
+
+var srequest = function(url, options, status_code) {
+  var response = request.sync(null, url, options)[0]
+  if (response.statusCode != (status_code || 200) || response.body.errors) throw new Error(JSON.stringify(response.body))
+  return response.body
+}
+
+Sync(function() {
+
+  console.log(update('Authenticating as ' + MODULUS_USERNAME))
+  authenticateModulusUser()
+
+  console.log(update('Looking for ' + BRANCH + ' project'))
+  if (getModulusProject()) {
+    console.info(warn('Deploying'))
+    deployBranch()
+  } else {
+    console.log(warn('Project not found, creating'))
+    createModulusProject()
+
+    console.info(warn('Deploying'))
+    deployBranch()
+
+    console.log(warn('Adding comment to pull request'))
+    addProjectUrlToPullRequest()
+  }
+
+}, function(err) {if(err) throw err}
+)
