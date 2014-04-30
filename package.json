@@ -1,17 +1,26 @@
 {
-  "name": "sparkart-site-deployer",
-  "version": "0.0.0",
-  "description": "Hosts pull requests for review.",
-  "main": "deploy.js",
+  "name": "qa-deployer",
+  "version": "0.0.1",
+  "description": "Deploy a package to a hosting service for easy review",
+  "main": "index.js",
   "bin": {
-    "curvature-deploy": "./deploy.js"
+    "circleci-modulus-deploy": "bin/circleci-modulus-deploy"
   },
   "preferGlobal": true,
-  "author": "pushred",
+  "author": {
+    "name": "pushred",
+    "url": "http://www.sparkart.com"
+  },
+  "homepage": "https://github.com/SparkartGroupInc/qa-deployer",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SparkartGroupInc/qa-deployer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/SparkartGroupInc/qa-deployer/issues"
+  },
+  "license": "MIT",
   "dependencies": {
-    "unirest": "~0.1.1",
-    "request": "~2.33.0",
-    "cli-color": "0.2.x",
-    "sync": "~0.2.2"
+    "request": "~2.33.0"
   }
 }
