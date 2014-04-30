@@ -19,23 +19,6 @@ var modulus_username = getEnv('MODULUS_USERNAME'),
 
 var qa_deployer = require('../index.js')
 
-var options = {
-  deployer: {
-    service: 'modulus',
-    auth: {username: modulus_username, password: modulus_password},
-    project: github_branch,
-    include_modules: include_modules
-  },
-  notifier: {
-    service: 'github-pull-request',
-    auth: {user: github_user, token: github_token},
-    owner: github_owner,
-    repo: github_repo,
-    branch: github_branch,
-    signature: 'Automatically deployed by CircleCI using [qa-deployer](https://github.com/SparkartGroupInc/qa-deployer)'
-  }
-}
-
 qa_deployer.deploy({
   deployer: {
     service: 'modulus',
