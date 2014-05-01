@@ -1,6 +1,8 @@
 # qa-deployer -- Deploy a package to a hosting service for easy review
 
-This package is used to easily deploy the contents of the current directory to an external service, and then send a deployment notification. The module is used by specifying a deployer and a notifier:
+This package is used to easily deploy the contents of the current directory to an external service, and then send a deployment notification.
+
+The easiest way to use this package is with a [CLI script](#Available-Scripts) (or writing your own). The module is used by specifying a deployer and a notifier:
 
 ```
 var qa_deployer = require('qa-deployer')
