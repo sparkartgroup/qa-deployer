@@ -81,7 +81,7 @@ dependencies:
     - npm install modulus -g
 deployment:
   qa:
-    branch: /^(?!master$)/
+    branch: /^(?!master$)(.+)/
     commands:
       - circleci-modulus-deploy
 ```
