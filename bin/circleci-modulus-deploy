@@ -1,0 +1,37 @@
+#!/usr/bin/env node
+
+var getEnv = function(name) {
+  if (!process.env[name]) {
+    throw new Error('Missing environment variable: ' + name)
+  } else {
+    return process.env[name]
+  }
+}
+
+var modulus_username = getEnv('MODULUS_USERNAME'),
+    modulus_password = getEnv('MODULUS_PASSWORD'),
+    github_user = getEnv('GITHUB_USER'),
+    github_token = getEnv('GITHUB_TOKEN'),
+    github_owner = getEnv('CIRCLE_PROJECT_USERNAME'),
+    github_repo = getEnv('CIRCLE_PROJECT_REPONAME'),
+    github_branch = getEnv('CIRCLE_BRANCH'),
+    include_modules = process.argv.indexOf('--include-modules') > -1
+
+var qa_deployer = require('../index.js')
+
+qa_deployer.deploy({
+  deployer: {
+    service: 'modulus',
+    auth: {username: modulus_username, password: modulus_password},
+    project: github_branch,
+    include_modules: include_modules
+  },
+  notifier: {
+    service: 'github-pull-request',
+    auth: {user: github_user, token: github_token},
+    owner: github_owner,
+    repo: github_repo,
+    branch: github_branch,
+    signature: 'Automatically deployed by CircleCI using [qa-deployer](https://github.com/SparkartGroupInc/qa-deployer)'
+  }
+})
