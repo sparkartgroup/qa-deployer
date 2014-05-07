@@ -14,11 +14,12 @@ exports.init = function(opts) {
 }
 
 var validate = function(callback) {
+  console.log('Looking for GitHub pull request for "' + options.branch + '"...')
   getPullRequest(function(pull_request) {
     if (pull_request) {
       callback()
     } else {
-      console.log('Can\'t find GitHub pull request for "' + options.branch + '", aborting.')
+      console.log("Can't find GitHub pull request, aborting")
     }
   })
 }

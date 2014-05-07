@@ -47,7 +47,7 @@ Adds a comment to the specified [GitHub](https://github.com/) branch's pull requ
 
 *Usage*
 
- - `auth` - An object with the GitHub account's `user` and `token`.
+ - `auth` - An object with the GitHub account's `user` and `token`. The [token](https://github.com/blog/1509-personal-api-tokens) needs to have access to either the `repo` or `public_repo` [scopes](https://developer.github.com/v3/oauth/#scopes).
  - `owner` - The owner of the repo containing the branch to comment on.
  - `repo` - The repo containing the branch to comment on.
  - `branch` - The branch to comment on.
