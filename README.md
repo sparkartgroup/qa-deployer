@@ -71,7 +71,7 @@ POSTs the deployed URL to a webhook URL, as JSON.
 
 ### circleci-deploy-github-pull-request-to-modulus ###
 
-Called by [CircleCI](https://circleci.com/), it automatically deploys a branch to Modulus when a commit is made to a GitHub pull request. Uses the `modulus` deployer, with the branch name as the project name.
+Called by [CircleCI](https://circleci.com/), it automatically deploys a branch to Modulus when a commit is made to a GitHub pull request. Uses the `modulus` deployer, with the branch name as the project name. If no open GitHub pull request exists for the current branch, the branch will not be deployed to Modulus, and the project will be stopped instead.
 
 Note: CircleCI will only trigger new builds when a commit is made to an existing pull request. To deploy a branch when a pull request is created (without pushing an extra commit), the [CircleCI API](https://circleci.com/docs/api#new-build) needs to be called. On way to automatically do this is to create a [PullRequestEvent Webhook](https://developer.github.com/v3/activity/events/types/#pullrequestevent) in the GitHub project's settings. This Webhook will POST to a relay service, such as [Zapier](http://www.zapier.com), which will in turn POST to the appropriate CircleCI API URL.
 

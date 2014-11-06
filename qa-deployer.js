@@ -13,6 +13,12 @@ exports.deploy = function(options, callback) {
   })
 }
 
+exports.withdraw = function(options, callback) {
+  var deployer = getDeployer(options.deployer)
+
+  deployer.withdraw(callback || function() {});
+}
+
 var getDeployer = function(options) {
   options = options || {}
   switch(options.service) {

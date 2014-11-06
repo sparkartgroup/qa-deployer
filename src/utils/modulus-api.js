@@ -16,6 +16,10 @@ exports.createProject = function(options, callback) {
   json_request.post(apiUrl('project/create'), {qs: {authToken: options.auth.token}, form: {name: options.project, creator: options.auth.user_id}}, callback)
 }
 
+exports.stopProject = function(options, project, callback) {
+  json_request.get(apiUrl('project/' + project.id + '/stop'), {qs: {authToken: options.auth.token}}, callback)
+}
+
 var apiUrl = function(endpoint) {
   return 'https://api.onmodulus.net/' + endpoint
 }
