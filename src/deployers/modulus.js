@@ -12,6 +12,12 @@ exports.init = function(options) {
     })
   }
 
+  var withdraw = function(callback) {
+    async.series([authenticateUser, stopProject], function() {
+      callback()
+    })
+  }
+
   var authenticateUser = function(callback) {
     console.log('Authenticating as: ' + options.auth.username)
     modulus_cli.login(options.auth, function() {
@@ -51,5 +57,18 @@ exports.init = function(options) {
     })
   }
 
-  return {deploy: deploy, options: options}
+  var stopProject = function(callback) {
+    console.log('Stopping Modulus project: ' + options.project)
+    modulus_api.getProjectByName(options, function(project) {
+      if (project && project.status === 'RUNNING') {
+        modulus_api.stopProject(options, project, function() {
+          callback()
+        })
+      } else {
+        callback()
+      }
+    })
+  }
+
+  return {deploy: deploy, withdraw: withdraw, options: options}
 }

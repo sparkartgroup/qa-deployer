@@ -7,7 +7,7 @@ var sinon = require('sinon');
 var modulus_cli = require('../../src/utils/modulus-cli.js');
 var modulus = require('../../src/deployers/modulus.js');
 
-describe('deployers/modulus.deploy()', function() {
+describe('deployers/modulus', function() {
   var options
   var nocks
 
@@ -30,46 +30,96 @@ describe('deployers/modulus.deploy()', function() {
     this.sinon.restore()
   })
 
-  it('deploys to a new project', function(done) {
-    var mock_modulus_cli = this.sinon.mock(modulus_cli)
+  describe('.deploy()', function() {
+    it('deploys to a new project', function(done) {
+      var mock_modulus_cli = this.sinon.mock(modulus_cli)
 
-    // authenticateUser
-    mock_modulus_cli.expects('command').withArgs(['login', '--username', 'me', '--password', 'thePassword']).yields()
-    nocks.push(nock('https://api.onmodulus.net').post('/user/authenticate', {login: 'me', password: HASHED_PASSWORD}).reply(200, {id: 123, authToken: 'theToken'}))
+      // authenticateUser
+      mock_modulus_cli.expects('command').withArgs(['login', '--username', 'me', '--password', 'thePassword']).yields()
+      nocks.push(nock('https://api.onmodulus.net').post('/user/authenticate', {login: 'me', password: HASHED_PASSWORD}).reply(200, {id: 123, authToken: 'theToken'}))
 
-    // createProjectIfMissing
-    nocks.push(nock('https://api.onmodulus.net').get('/user/123/projects?authToken=theToken').reply(200, []))
-    nocks.push(nock('https://api.onmodulus.net').post('/project/create?authToken=theToken', {name: 'theProject', creator: 123}).reply(200, {name: 'theProject'}))
+      // createProjectIfMissing
+      nocks.push(nock('https://api.onmodulus.net').get('/user/123/projects?authToken=theToken').reply(200, []))
+      nocks.push(nock('https://api.onmodulus.net').post('/project/create?authToken=theToken', {name: 'theProject', creator: 123}).reply(200, {name: 'theProject'}))
 
-    // deployProject
-    mock_modulus_cli.expects('command').withArgs(['deploy', '-p', 'theProject']).yields()
-    nocks.push(nock('https://api.onmodulus.net').get('/user/123/projects?authToken=theToken').reply(200, [{name: 'theProject', domain: 'review/url'}]))
+      // deployProject
+      mock_modulus_cli.expects('command').withArgs(['deploy', '-p', 'theProject']).yields()
+      nocks.push(nock('https://api.onmodulus.net').get('/user/123/projects?authToken=theToken').reply(200, [{name: 'theProject', domain: 'review/url'}]))
 
-    modulus.init(options).deploy(function(redeploy, review_url) {
-      assert(!redeploy)
-      assert.equal(review_url, 'http://review/url')
-      done()
+      modulus.init(options).deploy(function(redeploy, review_url) {
+        assert(!redeploy)
+        assert.equal(review_url, 'http://review/url')
+        done()
+      })
+    })
+
+    it('deploys to an existing project', function(done) {
+      var mock_modulus_cli = this.sinon.mock(modulus_cli)
+
+      // authenticateUser
+      mock_modulus_cli.expects('command').withArgs(['login', '--username', 'me', '--password', 'thePassword']).yields()
+      nocks.push(nock('https://api.onmodulus.net').post('/user/authenticate', {login: 'me', password: HASHED_PASSWORD}).reply(200, {id: 123, authToken: 'theToken'}))
+
+      // createProjectIfMissing
+      nocks.push(nock('https://api.onmodulus.net').get('/user/123/projects?authToken=theToken').reply(200, [{name: 'theProject'}]))
+
+      // deployProject
+      mock_modulus_cli.expects('command').withArgs(['deploy', '-p', 'theProject']).yields()
+      nocks.push(nock('https://api.onmodulus.net').get('/user/123/projects?authToken=theToken').reply(200, [{name: 'theProject', domain: 'review/url'}]))
+
+      modulus.init(options).deploy(function(redeploy, review_url) {
+        assert(redeploy)
+        assert.equal(review_url, 'http://review/url')
+        done()
+      })
     })
   })
 
-  it('deploys to an existing project', function(done) {
-    var mock_modulus_cli = this.sinon.mock(modulus_cli)
+  describe('.withdraw()', function() {
+    it('stops an existing running project', function(done) {
+      var mock_modulus_cli = this.sinon.mock(modulus_cli)
 
-    // authenticateUser
-    mock_modulus_cli.expects('command').withArgs(['login', '--username', 'me', '--password', 'thePassword']).yields()
-    nocks.push(nock('https://api.onmodulus.net').post('/user/authenticate', {login: 'me', password: HASHED_PASSWORD}).reply(200, {id: 123, authToken: 'theToken'}))
+      // authenticateUser
+      mock_modulus_cli.expects('command').withArgs(['login', '--username', 'me', '--password', 'thePassword']).yields()
+      nocks.push(nock('https://api.onmodulus.net').post('/user/authenticate', {login: 'me', password: HASHED_PASSWORD}).reply(200, {id: 123, authToken: 'theToken'}))
 
-    // createProjectIfMissing
-    nocks.push(nock('https://api.onmodulus.net').get('/user/123/projects?authToken=theToken').reply(200, [{name: 'theProject'}]))
+      // stopProject
+      nocks.push(nock('https://api.onmodulus.net').get('/user/123/projects?authToken=theToken').reply(200, [{name: 'theProject', id: 54321, status: 'RUNNING'}]))
+      nocks.push(nock('https://api.onmodulus.net').get('/project/54321/stop?authToken=theToken').reply(200, {name: 'theProject', id: 54321, status: 'STOPPING'}))
 
-    // deployProject
-    mock_modulus_cli.expects('command').withArgs(['deploy', '-p', 'theProject']).yields()
-    nocks.push(nock('https://api.onmodulus.net').get('/user/123/projects?authToken=theToken').reply(200, [{name: 'theProject', domain: 'review/url'}]))
+      modulus.init(options).withdraw(function() {
+        done()
+      })
+    })
 
-    modulus.init(options).deploy(function(redeploy, review_url) {
-      assert(redeploy)
-      assert.equal(review_url, 'http://review/url')
-      done()
+    it('does not stop an existing non-running project', function(done) {
+      var mock_modulus_cli = this.sinon.mock(modulus_cli)
+
+      // authenticateUser
+      mock_modulus_cli.expects('command').withArgs(['login', '--username', 'me', '--password', 'thePassword']).yields()
+      nocks.push(nock('https://api.onmodulus.net').post('/user/authenticate', {login: 'me', password: HASHED_PASSWORD}).reply(200, {id: 123, authToken: 'theToken'}))
+
+      // stopProject
+      nocks.push(nock('https://api.onmodulus.net').get('/user/123/projects?authToken=theToken').reply(200, [{name: 'theProject', id: 54321, status: 'STOPPED'}]))
+
+      modulus.init(options).withdraw(function() {
+        done()
+      })
+    })
+
+    it('does not stop a non-existing project', function(done) {
+      var mock_modulus_cli = this.sinon.mock(modulus_cli)
+
+      // authenticateUser
+      mock_modulus_cli.expects('command').withArgs(['login', '--username', 'me', '--password', 'thePassword']).yields()
+      nocks.push(nock('https://api.onmodulus.net').post('/user/authenticate', {login: 'me', password: HASHED_PASSWORD}).reply(200, {id: 123, authToken: 'theToken'}))
+
+      // stopProject
+      nocks.push(nock('https://api.onmodulus.net').get('/user/123/projects?authToken=theToken').reply(200, []))
+
+      modulus.init(options).withdraw(function() {
+        done()
+      })
     })
   })
 })

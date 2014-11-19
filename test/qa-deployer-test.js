@@ -7,7 +7,7 @@ var webhook = require('../src/notifiers/webhook.js');
 
 var qa_deployer = require('../qa-deployer.js');
 
-describe('qa-deployer.deploy()', function() {
+describe('qa-deployer', function() {
   var options = {
     deployer: {service: 'modulus'},
     notifiers: [
@@ -33,43 +33,57 @@ describe('qa-deployer.deploy()', function() {
     })
   })
 
-  it('deploys and notifies', function(done) {
-    sinons.stub(modulus, 'init', function() {
-      var deployer = modulus_init.apply(this, arguments)
-      expectations.push(sinons.mock(deployer).expects('deploy').yields(false, 'http://review/url'))
-      return deployer
-    })
-    sinons.stub(github_pr, 'init', function() {
-      var notifier = github_pr_init.apply(this, arguments)
-      expectations.push(sinons.mock(notifier).expects('notify').yields())
-      return notifier
-    })
-    sinons.stub(webhook, 'init', function() {
-      var notifier = webhook_init.apply(this, arguments)
-      expectations.push(sinons.mock(notifier).expects('notify').yields())
-      return notifier
+  describe('deploy()', function() {
+    it('deploys and notifies', function(done) {
+      sinons.stub(modulus, 'init', function() {
+        var deployer = modulus_init.apply(this, arguments)
+        expectations.push(sinons.mock(deployer).expects('deploy').yields(false, 'http://review/url'))
+        return deployer
+      })
+      sinons.stub(github_pr, 'init', function() {
+        var notifier = github_pr_init.apply(this, arguments)
+        expectations.push(sinons.mock(notifier).expects('notify').yields())
+        return notifier
+      })
+      sinons.stub(webhook, 'init', function() {
+        var notifier = webhook_init.apply(this, arguments)
+        expectations.push(sinons.mock(notifier).expects('notify').yields())
+        return notifier
+      })
+
+      qa_deployer.deploy(options, done)
     })
 
-    qa_deployer.deploy(options, done)
+    it('deploys and notifies a redeploy', function(done) {
+      sinons.stub(modulus, 'init', function() {
+        var deployer = modulus_init.apply(this, arguments)
+        expectations.push(sinons.mock(deployer).expects('deploy').yields(true, 'http://review/url'))
+        return deployer
+      })
+      sinons.stub(github_pr, 'init', function() {
+        var notifier = github_pr_init.apply(this, arguments)
+        expectations.push(sinons.mock(notifier).expects('notify').yields().never())
+        return notifier
+      })
+      sinons.stub(webhook, 'init', function() {
+        var notifier = webhook_init.apply(this, arguments)
+        expectations.push(sinons.mock(notifier).expects('notify').yields())
+        return notifier
+      })
+
+      qa_deployer.deploy(options, done)
+    })
   })
 
-  it('deploys and notifies a redeploy', function(done) {
-    sinons.stub(modulus, 'init', function() {
-      var deployer = modulus_init.apply(this, arguments)
-      expectations.push(sinons.mock(deployer).expects('deploy').yields(true, 'http://review/url'))
-      return deployer
-    })
-    sinons.stub(github_pr, 'init', function() {
-      var notifier = github_pr_init.apply(this, arguments)
-      expectations.push(sinons.mock(notifier).expects('notify').yields().never())
-      return notifier
-    })
-    sinons.stub(webhook, 'init', function() {
-      var notifier = webhook_init.apply(this, arguments)
-      expectations.push(sinons.mock(notifier).expects('notify').yields())
-      return notifier
-    })
+  describe('.withdraw()', function() {
+    it('withdraws', function(done) {
+      sinons.stub(modulus, 'init', function() {
+        var deployer = modulus_init.apply(this, arguments)
+        expectations.push(sinons.mock(deployer).expects('withdraw').yields())
+        return deployer
+      })
 
-    qa_deployer.deploy(options, done)
+      qa_deployer.withdraw(options, done)
+    })
   })
 })

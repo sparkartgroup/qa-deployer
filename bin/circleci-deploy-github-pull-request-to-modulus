@@ -30,11 +30,14 @@ var github_branch = getEnv('CIRCLE_BRANCH'),
 
 console.log('Retrieving GitHub pull request for branch: ' + github_branch)
 github_api.getPullRequestByBranch(extend(github_options, {branch: github_branch}), function(pull_request) {
-  if (!pull_request) return console.log("Can't find GitHub pull request")
-
   var options = {
     deployer: extend(script_options.deployer, modulus_options, {service: 'modulus'}),
     notifiers: []
+  }
+
+  if (!pull_request || pull_request.state === 'closed') {
+    console.log(pull_request ? 'GitHub pull request is closed' : "Can't find GitHub pull request")
+    return qa_deployer.withdraw(options)
   }
 
   script_options.notifiers.forEach(function(notifier) {
