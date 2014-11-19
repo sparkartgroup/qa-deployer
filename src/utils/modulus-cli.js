@@ -1,37 +1,37 @@
-var spawn = require('child_process').spawn
+var spawn = require('child_process').spawn;
 
 exports.login = function(options, callback) {
-  exports.command(['login', '--username', options.username, '--password', options.password], callback)
-}
+  exports.command(['login', '--username', options.username, '--password', options.password], callback);
+};
 
 exports.deploy = function(options, callback) {
-  var args = ['deploy', '-p', options.project]
+  var args = ['deploy', '-p', options.project];
   if (options.include_modules) {
-    args.push('--include-modules')
+    args.push('--include-modules');
   }
 
-  exports.command(args, callback)
-}
+  exports.command(args, callback);
+};
 
 exports.command = function(args, callback) {
-  var child_process = spawn('modulus', args)
+  var child_process = spawn('modulus', args);
 
-  child_process.stdout.pipe(process.stdout)
-  child_process.stderr.pipe(process.stderr)
+  child_process.stdout.pipe(process.stdout);
+  child_process.stderr.pipe(process.stderr);
 
   child_process.on('error', function(err) {
     if (err.message == 'spawn ENOENT') {
-      throw new Error("Modulus CLI is missing, install it and try again")
+      throw new Error("Modulus CLI is missing, install it and try again");
     } else {
-      throw err
+      throw err;
     }
-  })
+  });
 
   child_process.on('close', function(code) {
     if (code > 0) {
-      throw new Error("Modulus CLI command returned an error: " + code)
+      throw new Error("Modulus CLI command returned an error: " + code);
     } else {
-      callback()
+      callback();
     }
-  })
-}
+  });
+};
