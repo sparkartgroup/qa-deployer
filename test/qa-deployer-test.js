@@ -51,7 +51,9 @@ describe('qa-deployer', function() {
         return notifier;
       });
 
-      qa_deployer.deploy(options, done);
+      qa_deployer.deploy(options, function() {
+        done();
+      });
     });
 
     it('deploys and notifies a redeploy', function(done) {
@@ -71,7 +73,9 @@ describe('qa-deployer', function() {
         return notifier;
       });
 
-      qa_deployer.deploy(options, done);
+      qa_deployer.deploy(options, function() {
+        done();
+      });
     });
   });
 
@@ -83,7 +87,9 @@ describe('qa-deployer', function() {
         return deployer;
       });
 
-      qa_deployer.withdraw(options, done);
+      qa_deployer.withdraw(options, function() {
+        done();
+      });
     });
   });
 });

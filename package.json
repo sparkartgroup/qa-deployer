@@ -4,7 +4,8 @@
   "description": "Deploy a package to a hosting service for easy review",
   "main": "qa-deployer.js",
   "bin": {
-    "circleci-deploy-github-pull-request-to-modulus": "bin/circleci-deploy-github-pull-request-to-modulus"
+    "circleci-deploy": "bin/circleci-deploy",
+    "circleci-deploy-github-pull-request": "bin/circleci-deploy-github-pull-request"
   },
   "preferGlobal": true,
   "author": {
@@ -22,9 +23,9 @@
   "license": "MIT",
   "dependencies": {
     "async": "~0.8.0",
-    "extend": "~1.2.1",
     "minimist": "~0.0.9",
-    "request": "~2.33.0"
+    "request": "~2.33.0",
+    "s3-site": "SparkartGroupInc/s3-site#remove-extensions-option"
   },
   "devDependencies": {
     "nock": "~0.29.2",
