@@ -140,7 +140,7 @@ With the `s3-static-website` deployer:
 Command line options:
 
  - `--deployer=SERVICE` - The deployer to use. Optional, can also be set from the options file.
- - `--options-from=FILE` - Read additional options from JSON formatted FILE.
+ - `--options-from=FILE` - Read additional options from FILE.
 
 Example `circle.yml` configuration file:
 
