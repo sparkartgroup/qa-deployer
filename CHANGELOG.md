@@ -1,3 +1,7 @@
+## 2.0.1 (Jan 16, 2015)
+
+ - Install modulus-cli automatically [[1602923](https://github.com/SparkartGroupInc/qa-deployer/commit/16029235146e21a86cc2933ea1e0863bf412e627)]
+
 ## 2.0.0 (Dec 12, 2014)
 
  - s3-static-website deployer [[d8e176a](https://github.com/SparkartGroupInc/qa-deployer/commit/d8e176a56b24e9281bcae6fa296c1f25b8838d6e)]
