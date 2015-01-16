@@ -1,4 +1,5 @@
 var spawn = require('child_process').spawn;
+var modulus = require.resolve('modulus/bin/modulus');
 
 exports.login = function(options, callback) {
   exports.command(['login', '--username', options.username, '--password', options.password], callback);
@@ -14,7 +15,7 @@ exports.deploy = function(options, callback) {
 };
 
 exports.command = function(args, callback) {
-  var child_process = spawn('modulus', args);
+  var child_process = spawn(modulus, args);
 
   child_process.stdout.pipe(process.stdout);
   child_process.stderr.pipe(process.stderr);
