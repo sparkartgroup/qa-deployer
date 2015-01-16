@@ -144,7 +144,6 @@ Example `circle.yml` configuration file:
 dependencies:
   post:
     - npm install qa-deployer -g
-    - npm install modulus -g
 deployment:
   production:
     branch: master
@@ -164,7 +163,6 @@ Example `circle.yml` configuration file:
 dependencies:
   post:
     - npm install qa-deployer -g
-    - npm install modulus -g
 deployment:
   qa:
     branch: /^(?!master$)(.+)/
