@@ -24,6 +24,7 @@
   "dependencies": {
     "async": "~0.8.0",
     "minimist": "~0.0.9",
+    "modulus": "^3.0.5",
     "request": "~2.33.0",
     "s3-site": "SparkartGroupInc/s3-site#remove-extensions-option"
   },

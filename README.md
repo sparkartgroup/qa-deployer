@@ -32,10 +32,6 @@ qa_deployer.deploy({
 
 Deploys the current package to [Modulus](https://modulus.io/).
 
-*Requirements*
-
- - The [Modulus CLI](https://github.com/onmodulus/modulus-cli) needs to be installed first.
-
 *Usage*
 
  - `auth` - An object with the Modulus account's `username` and `password`.
