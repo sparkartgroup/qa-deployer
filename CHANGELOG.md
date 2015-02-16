@@ -1,6 +1,6 @@
-## Unreleased
+## 2.1.0 (Feb 16, 2015)
 
- - Default deployer target name
+ - Default deployer target name [[dd3dc06](https://github.com/SparkartGroupInc/qa-deployer/commit/dd3dc0678a34d658375f337cad90964f83891978)]
 
 ## 2.0.1 (Jan 16, 2015)
 
