@@ -2,6 +2,7 @@ var assert = require('assert');
 var sinon = require('sinon');
 
 var s3_static_website = require('../../src/deployers/s3-static-website');
+var utils = require('../../src/utils/utils.js');
 
 describe('deployers/s3-static-website', function() {
   var options;
@@ -16,6 +17,21 @@ describe('deployers/s3-static-website', function() {
 
   afterEach(function() {
     this.sinon.restore();
+  });
+
+  describe('.init()', function() {
+    it('initializes options.bucket_name', function(done) {
+      var mock_utils = this.sinon.mock(utils);
+      mock_utils.expects('cwdName').returns('some-project');
+
+      assert.equal(s3_static_website.init({}).options.bucket_name, 'some-project');
+      done();
+    });
+
+    it('initializes options.region', function(done) {
+      assert.equal(s3_static_website.init({}).options.region, 'us-east-1');
+      done();
+    });
   });
 
   describe('.deploy()', function() {

@@ -35,7 +35,7 @@ Deploys the current package to [Modulus](https://modulus.io/).
 *Usage*
 
  - `auth` - An object with the Modulus account's `username` and `password`.
- - `project` - The Modulus project where to upload the package. If the project is missing, it will be automatically created.
+ - `project` - The Modulus project where to upload the package. If the project is missing, it will be automatically created. Optional, defaults to the current directory name.
  - `include_modules` - Whether to upload the `node_modules` folder. Optional, defaults to `false`.
 
 ### s3-static-website ###
@@ -45,7 +45,7 @@ Deploys the current directory to [Amazon S3](http://aws.amazon.com/s3/) as a [st
 *Usage*
 
  - `s3_options` - An object used to configure the connection to S3. See the `AWS.S3` [documentation](http://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/S3.html#constructor-property).
- - `bucket_name` - The S3 bucket where to upload the files. If the bucket is missing, it will be automatically created and configured to host the static website.
+ - `bucket_name` - The S3 bucket where to upload the files. If the bucket is missing, it will be automatically created and configured to host the static website. Optional, defaults to the current directory name.
  - `region` - The AWS region where the site will be hosted. Optional, defaults to `us-east-1`.
  - `removeExtensions` - List of extensions to remove from uploaded files, for example `['.html', '.htm']`. Optional.
  - `indexDocument` - Default index document when a folder is requested from S3. Optional, defaults to `index.html`.
@@ -81,10 +81,12 @@ POSTs the deployed URL to a webhook URL, as JSON.
 
 Called by [CircleCI](https://circleci.com/), it automatically deploys a branch when a commit is made.
 
-The following deployers are supported:
+The following deployers are supported, with some usage changes:
 
- - `modulus` - The GitHub branch name is used as the Modulus project name.
- - `s3-static-website` - The GitHub organization, repository and branch names are used as the S3 bucket name.
+ - [modulus](#modulus)
+  - `project` - Defaults to the GitHub branch, unless it is `master`.
+ - [s3-static-website](#s3-static-website)
+  - `bucket_name` - Defaults to the GitHub organization, repository and branch (`[organization]-[repository]-[branch]`), unless the branch is `master`.
 
 Notifiers can be enabled by adding an options file. This JSON formatted file can contain deployer and notifier options, similar to the module usage above. For example:
 
@@ -153,7 +155,7 @@ deployment:
 
 ### circleci-deploy-github-pull-request ###
 
-Similar to the `circleci-deploy` script, but will only deploy when an open GitHub pull request exists for the current branch. If not, the branch will not be deployed, and will be withdrawn from the deployer service instead.
+Similar to the [circleci-deploy](#circleci-deploy) script, but will only deploy when an open GitHub pull request exists for the current branch. If not, the branch will not be deployed, and will be withdrawn from the deployer service instead.
 
 Note: CircleCI will only trigger new builds when a commit is made to an existing pull request. To deploy a branch when a pull request is created (without pushing an extra commit), the [CircleCI API](https://circleci.com/docs/api#new-build) needs to be called. On way to automatically do this is to create a [PullRequestEvent Webhook](https://developer.github.com/v3/activity/events/types/#pullrequestevent) in the GitHub project's settings. This Webhook will POST to a relay service, such as [Zapier](http://www.zapier.com), which will in turn POST to the appropriate CircleCI API URL.
 

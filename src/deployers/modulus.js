@@ -1,8 +1,11 @@
-var async = require('async');
+var async       = require('async');
 var modulus_api = require('../utils/modulus-api.js');
 var modulus_cli = require('../utils/modulus-cli.js');
+var utils       = require('../utils/utils.js');
 
 exports.init = function(options) {
+  options.project || (options.project = utils.cwdName());
+
   var redeploy;
   var review_url;
 

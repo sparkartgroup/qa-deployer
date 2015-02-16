@@ -1,3 +1,7 @@
+## Unreleased
+
+ - Default deployer target name
+
 ## 2.0.1 (Jan 16, 2015)
 
  - Install modulus-cli automatically [[1602923](https://github.com/SparkartGroupInc/qa-deployer/commit/16029235146e21a86cc2933ea1e0863bf412e627)]

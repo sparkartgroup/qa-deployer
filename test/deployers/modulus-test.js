@@ -6,6 +6,7 @@ var sinon = require('sinon');
 
 var modulus_cli = require('../../src/utils/modulus-cli.js');
 var modulus = require('../../src/deployers/modulus.js');
+var utils = require('../../src/utils/utils.js');
 
 describe('deployers/modulus', function() {
   var options;
@@ -28,6 +29,16 @@ describe('deployers/modulus', function() {
     nock.cleanAll();
     nock.enableNetConnect();
     this.sinon.restore();
+  });
+
+  describe('.init()', function() {
+    it('initializes options.project', function(done) {
+      var mock_utils = this.sinon.mock(utils);
+      mock_utils.expects('cwdName').returns('some-project');
+
+      assert.equal(modulus.init({}).options.project, 'some-project');
+      done();
+    });
   });
 
   describe('.deploy()', function() {

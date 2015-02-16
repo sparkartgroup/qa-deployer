@@ -1,8 +1,10 @@
 var async  = require('async');
 var Bucket = require('s3-site/lib/bucket').Bucket;
+var utils  = require('../utils/utils.js');
 
 exports.init = function(options) {
-  options.region || (options.region = 'us-east-1');
+  options.bucket_name || (options.bucket_name = utils.cwdName());
+  options.region      || (options.region = 'us-east-1');
 
   var bucket = new Bucket(
     {

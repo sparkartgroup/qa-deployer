@@ -44,6 +44,16 @@ describe('utils/circleci', function() {
       done();
     });
 
+    it('modulus with master branch', function(done) {
+      process.env['CIRCLE_BRANCH']    = 'master';
+      process.env['MODULUS_USERNAME'] = 'me';
+      process.env['MODULUS_PASSWORD'] = 'mypassword';
+
+      var options = circleci.getDeployerOptions({service: 'modulus'});
+      assert.deepEqual(options, {service: 'modulus', project: null, auth: {username: 'me', password: 'mypassword'}});
+      done();
+    });
+
     it('s3-static-website', function(done) {
       process.env['CIRCLE_PROJECT_USERNAME'] = 'My Org';
       process.env['CIRCLE_PROJECT_REPONAME'] = '-- jfd. kjifds. mi92n%$$#@$';
@@ -53,6 +63,18 @@ describe('utils/circleci', function() {
 
       var options = circleci.getDeployerOptions({service: 's3-static-website'});
       assert.deepEqual(options, {service: 's3-static-website', bucket_name: 'my-org-jfd-kjifds-mi92n-jifjd-fd-0', s3_options: {accessKeyId: '12345', secretAccessKey: '54321'}});
+      done();
+    });
+
+    it('s3-static-website with master branch', function(done) {
+      process.env['CIRCLE_PROJECT_USERNAME'] = 'My Org';
+      process.env['CIRCLE_PROJECT_REPONAME'] = '-- jfd. kjifds. mi92n%$$#@$';
+      process.env['CIRCLE_BRANCH']           = 'master';
+      process.env['AWS_ACCESS_KEY_ID']       = '12345';
+      process.env['AWS_SECRET_ACCESS_KEY']   = '54321';
+
+      var options = circleci.getDeployerOptions({service: 's3-static-website'});
+      assert.deepEqual(options, {service: 's3-static-website', bucket_name: null, s3_options: {accessKeyId: '12345', secretAccessKey: '54321'}});
       done();
     });
 

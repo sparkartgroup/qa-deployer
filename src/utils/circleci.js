@@ -12,13 +12,13 @@ module.exports.getGitHubOptions = function(options) {
 module.exports.getDeployerOptions = function(options) {
   switch (options.service) {
   case 'modulus':
-    options.project || (options.project = getEnv('CIRCLE_BRANCH'));
+    options.project || (options.project = getModulusProject());
     options.auth    || (options.auth = {});
     options.auth.username || (options.auth.username = getEnv('MODULUS_USERNAME'));
     options.auth.password || (options.auth.password = getEnv('MODULUS_PASSWORD'));
     break;
   case 's3-static-website':
-    options.bucket_name || (options.bucket_name = getBucketName([getEnv('CIRCLE_PROJECT_USERNAME'), getEnv('CIRCLE_PROJECT_REPONAME'), getEnv('CIRCLE_BRANCH')]));
+    options.bucket_name || (options.bucket_name = getS3BucketName());
     options.s3_options  || (options.s3_options = {});
     options.s3_options.accessKeyId     || (options.s3_options.accessKeyId = getEnv('AWS_ACCESS_KEY_ID'));
     options.s3_options.secretAccessKey || (options.s3_options.secretAccessKey = getEnv('AWS_SECRET_ACCESS_KEY'));
@@ -76,6 +76,17 @@ var getEnv = function(name) {
   }
 };
 
-var getBucketName = function(parts) {
+var getModulusProject = function() {
+  var branch = getEnv('CIRCLE_BRANCH');
+  if (branch == 'master') return null;
+
+  return branch;
+};
+
+var getS3BucketName = function() {
+  var branch = getEnv('CIRCLE_BRANCH');
+  if (branch == 'master') return null;
+
+  var parts = [getEnv('CIRCLE_PROJECT_USERNAME'), getEnv('CIRCLE_PROJECT_REPONAME'), branch];
   return parts.join('-').toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/--+/g, '-').replace(/(^-|-$)/g, '').substring(0, 63).replace(/-$/, '');
 };
