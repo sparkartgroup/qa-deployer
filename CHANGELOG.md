@@ -1,3 +1,7 @@
+## 2.1.1 (Feb 23, 2015)
+
+ - Use latest s3-site [[9abaf3b](https://github.com/SparkartGroupInc/qa-deployer/commit/9abaf3b9b56b450848c533a95d9771fce6dd0a39)]
+
 ## 2.1.0 (Feb 16, 2015)
 
  - Default deployer target name [[dd3dc06](https://github.com/SparkartGroupInc/qa-deployer/commit/dd3dc0678a34d658375f337cad90964f83891978)]
