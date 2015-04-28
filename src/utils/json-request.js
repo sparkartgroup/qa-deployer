@@ -8,6 +8,10 @@ exports.post = function(url, options, callback) {
   request.post(url, requestOptions(options), validateResponse(callback));
 };
 
+exports.put = function(url, options, callback) {
+  request.put(url, requestOptions(options), validateResponse(callback));
+};
+
 var requestOptions = function(options) {
   options.json = true;
   options.headers = options.headers || {};

@@ -73,6 +73,8 @@ POSTs the deployed URL to a webhook URL, as JSON.
 
  - `url` - The webhook URL to POST to.
  - `notify_redeploys` - Whether to notify after the first deploy to the deployer service. Optional, defaults to `false`.
+ - `method` - HTTP method to use: `get`, `post` or `put`. Optional, defaults to `post`.
+ - `headers` - Object of HTTP headers to add to the request. Optional.
  - `body` - A function called with the `review_url` as an argument, that returns the JavaScript object to POST. Optional, defaults to `{review_url: <review_url>}`.
 
 ## Available Scripts ##

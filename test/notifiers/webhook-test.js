@@ -36,5 +36,19 @@ describe('notifiers/webhook.notify()', function() {
       options.body = function(review_url) {return {a: review_url, b: 'test'}};
       webhook.init(options).notify('http://review/url', done);
     });
+
+    it('with a custom method', function(done) {
+      nocks.push(nock('http://webhook').put('/url', {review_url: 'http://review/url'}).reply(200, {}));
+
+      options.method = 'put';
+      webhook.init(options).notify('http://review/url', done);
+    });
+
+    it('with custom headers', function(done) {
+      nocks.push(nock('http://webhook').matchHeader('some', 'header').post('/url', {review_url: 'http://review/url'}).reply(200, {}));
+
+      options.headers = {'some': 'header'};
+      webhook.init(options).notify('http://review/url', done);
+    });
   });
 });
