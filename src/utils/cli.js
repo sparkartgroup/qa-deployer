@@ -54,3 +54,20 @@ module.exports.circleciDeployGitHubPullRequest = function(callback) {
     }
   });
 };
+
+module.exports.circleciWithdrawClosedGitHubPullRequests = function(callback) {
+  var cli_options = module.exports.getCLIOptions();
+  var github_options = circleci.getGitHubOptions();
+
+  console.log('Retrieving closed GitHub pull requests');
+  github_api.getClosedPullRequests(github_options, function(pull_requests) {
+    cli_options.deployer.github_branches = pull_requests.map(function(pr) {return pr.head.ref});
+    var qa_deployer_options = {
+      deployer: circleci.getDeployerOptions(cli_options.deployer)
+    };
+    qa_deployer.withdraw(qa_deployer_options, function() {
+      console.log('Withdrawn');
+      if (callback) callback();
+    });
+  });
+};

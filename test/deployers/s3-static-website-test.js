@@ -1,11 +1,14 @@
 var assert = require('assert');
 var sinon = require('sinon');
 
+var Bucket = require('s3-site/lib/bucket').Bucket;
+var AWS = require('aws-sdk');
 var s3_static_website = require('../../src/deployers/s3-static-website');
 var utils = require('../../src/utils/utils.js');
 
 describe('deployers/s3-static-website', function() {
   var options;
+  var mock_bucket;
 
   beforeEach(function() {
     options = {
@@ -13,6 +16,7 @@ describe('deployers/s3-static-website', function() {
       bucket_name: 'the-bucket-name'
     };
     this.sinon = sinon.sandbox.create();
+    mock_bucket = this.sinon.mock(Bucket.prototype);
   });
 
   afterEach(function() {
@@ -36,14 +40,10 @@ describe('deployers/s3-static-website', function() {
 
   describe('.deploy()', function() {
     it('deploys to a new website', function(done) {
+      mock_bucket.expects('verifyExistence').yields('Does not exist');
+      mock_bucket.expects('deploy').yields();
+
       var s3 = s3_static_website.init(options);
-      var mock_bucket = this.sinon.mock(s3.bucket);
-
-      mock_bucket.expects('verifyExistence').yields('Does not exist');
-      mock_bucket.expects('verifyExistence').yields('Does not exist');
-      mock_bucket.expects('create').yields();
-      mock_bucket.expects('upload').yields();
-
       s3.deploy(function(redeploy, review_url) {
         assert(!redeploy);
         assert.equal(review_url, 'http://the-bucket-name.s3-website-us-east-1.amazonaws.com');
@@ -52,17 +52,10 @@ describe('deployers/s3-static-website', function() {
     });
 
     it('deploys to an existing website', function(done) {
+      mock_bucket.expects('verifyExistence').yields();
+      mock_bucket.expects('deploy').yields();
+
       var s3 = s3_static_website.init(options);
-      var mock_bucket = this.sinon.mock(s3.bucket);
-
-      mock_bucket.expects('verifyExistence').yields();
-      mock_bucket.expects('verifyExistence').yields();
-      mock_bucket.expects('listContents').yields();
-      mock_bucket.expects('removeContents').yields();
-      mock_bucket.expects('removeBucket').yields();
-      mock_bucket.expects('create').yields();
-      mock_bucket.expects('upload').yields();
-
       s3.deploy(function(redeploy, review_url) {
         assert(redeploy);
         assert.equal(review_url, 'http://the-bucket-name.s3-website-us-east-1.amazonaws.com');
@@ -72,28 +65,41 @@ describe('deployers/s3-static-website', function() {
   });
 
   describe('.withdraw()', function() {
-    it('destroys an existing website', function(done) {
+    it('destroys a website', function(done) {
+      mock_bucket.expects('destroy').yields();
+
       var s3 = s3_static_website.init(options);
-      var mock_bucket = this.sinon.mock(s3.bucket);
-
-      mock_bucket.expects('verifyExistence').yields();
-      mock_bucket.expects('listContents').yields();
-      mock_bucket.expects('removeContents').yields();
-      mock_bucket.expects('removeBucket').yields();
-
       s3.withdraw(function() {
         done();
       });
     });
 
-    it('does not destroy a non-existing website', function(done) {
-      var s3 = s3_static_website.init(options);
-      var mock_bucket = this.sinon.mock(s3.bucket);
+    describe('with multiple buckets', function() {
+      beforeEach(function() {
+        options.bucket_names = ['the-bucket-name1', 'the-bucket-name2', 'the-bucket-name3'];
+      });
 
-      mock_bucket.expects('verifyExistence').yields('Does not exist');
+      it('destroys matching websites', function(done) {
+        var mock_AWS = this.sinon.mock(AWS);
+        mock_AWS.expects('S3').returns({
+          listBuckets: function(callback) {
+            callback(null, {Buckets: [{Name: 'the-bucket-name1'}, {Name: 'the-bucket-name2'}]})
+          },
+          getBucketLocation: function(options, callback) {
+            if (options.Bucket === 'the-bucket-name1') return callback(null, {LocationConstraint: 'us-west-1'});
+            if (options.Bucket === 'the-bucket-name2') return callback(null, {});
+            assert(false);
+          }
+        });
+        mock_AWS.expects('S3').twice(); // Used by s3-site
 
-      s3.withdraw(function() {
-        done();
+        mock_bucket.expects('destroy').yields();
+        mock_bucket.expects('destroy').yields();
+
+        var s3 = s3_static_website.init(options);
+        s3.withdraw(function() {
+          done();
+        });
       });
     });
   });

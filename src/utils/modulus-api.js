@@ -12,6 +12,10 @@ exports.getProjectByName = function(options, callback) {
   });
 };
 
+exports.getProjects = function(options, callback) {
+  json_request.get(apiUrl('user/' + options.auth.user_id + '/projects'), {qs: {authToken: options.auth.token}}, callback);
+};
+
 exports.createProject = function(options, callback) {
   json_request.post(apiUrl('project/create'), {qs: {authToken: options.auth.token}, form: {name: options.project, creator: options.auth.user_id}}, callback);
 };

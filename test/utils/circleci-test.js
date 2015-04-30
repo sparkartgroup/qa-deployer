@@ -34,48 +34,68 @@ describe('utils/circleci', function() {
   });
 
   describe('.getDeployerOptions()', function() {
-    it('modulus', function(done) {
-      process.env['CIRCLE_BRANCH']    = 'mybranch';
-      process.env['MODULUS_USERNAME'] = 'me';
-      process.env['MODULUS_PASSWORD'] = 'mypassword';
+    describe('modulus', function() {
+      beforeEach(function() {
+        process.env['MODULUS_USERNAME'] = 'me';
+        process.env['MODULUS_PASSWORD'] = 'mypassword';
+      });
 
-      var options = circleci.getDeployerOptions({service: 'modulus'});
-      assert.deepEqual(options, {service: 'modulus', project: 'mybranch', auth: {username: 'me', password: 'mypassword'}});
-      done();
+      it('with dev branch', function(done) {
+        process.env['CIRCLE_BRANCH'] = 'mybranch';
+
+        var options = circleci.getDeployerOptions({service: 'modulus'});
+        assert.deepEqual(options, {service: 'modulus', project: 'mybranch', auth: {username: 'me', password: 'mypassword'}});
+        done();
+      });
+
+      it('with master branch', function(done) {
+        process.env['CIRCLE_BRANCH'] = 'master';
+
+        var options = circleci.getDeployerOptions({service: 'modulus'});
+        assert.deepEqual(options, {service: 'modulus', project: null, auth: {username: 'me', password: 'mypassword'}});
+        done();
+      });
+
+      it('with multiple dev branches', function(done) {
+        process.env['CIRCLE_BRANCH'] = 'mybranch';
+
+        var options = circleci.getDeployerOptions({service: 'modulus', github_branches: ['mybranch1', 'mybranch2', 'master']});
+        assert.deepEqual(options, {service: 'modulus', github_branches: ['mybranch1', 'mybranch2', 'master'], projects: ['mybranch1', 'mybranch2'], auth: {username: 'me', password: 'mypassword'}});
+        done();
+      });
     });
 
-    it('modulus with master branch', function(done) {
-      process.env['CIRCLE_BRANCH']    = 'master';
-      process.env['MODULUS_USERNAME'] = 'me';
-      process.env['MODULUS_PASSWORD'] = 'mypassword';
+    describe('s3-static-website', function() {
+      beforeEach(function() {
+        process.env['CIRCLE_PROJECT_USERNAME'] = 'My Org';
+        process.env['CIRCLE_PROJECT_REPONAME'] = '-- jfd. kjifds. mi92n%$$#@$';
+        process.env['AWS_ACCESS_KEY_ID']       = '12345';
+        process.env['AWS_SECRET_ACCESS_KEY']   = '54321';
+      });
 
-      var options = circleci.getDeployerOptions({service: 'modulus'});
-      assert.deepEqual(options, {service: 'modulus', project: null, auth: {username: 'me', password: 'mypassword'}});
-      done();
-    });
+      it('with dev branch', function(done) {
+        process.env['CIRCLE_BRANCH'] = '   -- - jifjd fd-0-';
 
-    it('s3-static-website', function(done) {
-      process.env['CIRCLE_PROJECT_USERNAME'] = 'My Org';
-      process.env['CIRCLE_PROJECT_REPONAME'] = '-- jfd. kjifds. mi92n%$$#@$';
-      process.env['CIRCLE_BRANCH']           = '   -- - jifjd fd-0-';
-      process.env['AWS_ACCESS_KEY_ID']       = '12345';
-      process.env['AWS_SECRET_ACCESS_KEY']   = '54321';
+        var options = circleci.getDeployerOptions({service: 's3-static-website'});
+        assert.deepEqual(options, {service: 's3-static-website', bucket_name: 'my-org-jfd-kjifds-mi92n-jifjd-fd-0', s3_options: {accessKeyId: '12345', secretAccessKey: '54321'}});
+        done();
+      });
 
-      var options = circleci.getDeployerOptions({service: 's3-static-website'});
-      assert.deepEqual(options, {service: 's3-static-website', bucket_name: 'my-org-jfd-kjifds-mi92n-jifjd-fd-0', s3_options: {accessKeyId: '12345', secretAccessKey: '54321'}});
-      done();
-    });
+      it('with master branch', function(done) {
+        process.env['CIRCLE_BRANCH'] = 'master';
 
-    it('s3-static-website with master branch', function(done) {
-      process.env['CIRCLE_PROJECT_USERNAME'] = 'My Org';
-      process.env['CIRCLE_PROJECT_REPONAME'] = '-- jfd. kjifds. mi92n%$$#@$';
-      process.env['CIRCLE_BRANCH']           = 'master';
-      process.env['AWS_ACCESS_KEY_ID']       = '12345';
-      process.env['AWS_SECRET_ACCESS_KEY']   = '54321';
+        var options = circleci.getDeployerOptions({service: 's3-static-website'});
+        assert.deepEqual(options, {service: 's3-static-website', bucket_name: null, s3_options: {accessKeyId: '12345', secretAccessKey: '54321'}});
+        done();
+      });
 
-      var options = circleci.getDeployerOptions({service: 's3-static-website'});
-      assert.deepEqual(options, {service: 's3-static-website', bucket_name: null, s3_options: {accessKeyId: '12345', secretAccessKey: '54321'}});
-      done();
+      it('with multiple dev branches', function(done) {
+        process.env['CIRCLE_BRANCH'] = '   -- - jifjd fd-0-';
+
+        var options = circleci.getDeployerOptions({service: 's3-static-website', github_branches: ['my branch1', 'my branch2', 'master']});
+        assert.deepEqual(options, {service: 's3-static-website', github_branches: ['my branch1', 'my branch2', 'master'], bucket_names: ['my-org-jfd-kjifds-mi92n-my-branch1', 'my-org-jfd-kjifds-mi92n-my-branch2'], s3_options: {accessKeyId: '12345', secretAccessKey: '54321'}});
+        done();
+      });
     });
 
     it('with missing env', function(done) {

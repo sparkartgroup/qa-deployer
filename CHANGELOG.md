@@ -1,6 +1,7 @@
 ## Unreleased
 
  - Add `method` and `headers` options to webhook notifier
+ - Add circleci-withdraw-closed-github-pull-requests script
 
 ## 2.1.1 (Feb 23, 2015)
 

@@ -16,7 +16,8 @@ exports.init = function(options) {
   };
 
   var withdraw = function(callback) {
-    async.series([authenticateUser, stopProject], function() {
+    var fn = options.projects ? stopProjects : stopProject;
+    async.series([authenticateUser, fn], function() {
       callback();
     });
   };
@@ -70,6 +71,22 @@ exports.init = function(options) {
       } else {
         callback();
       }
+    });
+  };
+
+  var stopProjects = function(callback) {
+    console.log('Retrieving Modulus projects');
+    modulus_api.getProjects(options, function(projects) {
+      async.each(projects, function(project, callback) {
+        if (project.status === 'RUNNING' && options.projects.indexOf(project.name) > -1) {
+          console.log('Stopping Modulus project: ' + project.name);
+          modulus_api.stopProject(options, project, function() {
+            callback();
+          });
+        } else {
+          callback();
+        }
+      }, callback);
     });
   };
 

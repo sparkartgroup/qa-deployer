@@ -5,7 +5,8 @@
   "main": "qa-deployer.js",
   "bin": {
     "circleci-deploy": "bin/circleci-deploy",
-    "circleci-deploy-github-pull-request": "bin/circleci-deploy-github-pull-request"
+    "circleci-deploy-github-pull-request": "bin/circleci-deploy-github-pull-request",
+    "circleci-withdraw-closed-github-pull-requests": "bin/circleci-withdraw-closed-github-pull-requests"
   },
   "preferGlobal": true,
   "author": {
@@ -23,6 +24,7 @@
   "license": "MIT",
   "dependencies": {
     "async": "~0.8.0",
+    "aws-sdk": "^2.1.26",
     "minimist": "~0.0.9",
     "modulus": "^3.0.5",
     "request": "~2.33.0",

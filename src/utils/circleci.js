@@ -12,14 +12,14 @@ module.exports.getGitHubOptions = function(options) {
 module.exports.getDeployerOptions = function(options) {
   switch (options.service) {
   case 'modulus':
-    options.project || (options.project = getModulusProject());
-    options.auth    || (options.auth = {});
+    setModulusProject(options);
+    options.auth || (options.auth = {});
     options.auth.username || (options.auth.username = getEnv('MODULUS_USERNAME'));
     options.auth.password || (options.auth.password = getEnv('MODULUS_PASSWORD'));
     break;
   case 's3-static-website':
-    options.bucket_name || (options.bucket_name = getS3BucketName());
-    options.s3_options  || (options.s3_options = {});
+    setS3BucketName(options);
+    options.s3_options || (options.s3_options = {});
     options.s3_options.accessKeyId     || (options.s3_options.accessKeyId = getEnv('AWS_ACCESS_KEY_ID'));
     options.s3_options.secretAccessKey || (options.s3_options.secretAccessKey = getEnv('AWS_SECRET_ACCESS_KEY'));
     break;
@@ -76,15 +76,35 @@ var getEnv = function(name) {
   }
 };
 
-var getModulusProject = function() {
-  var branch = getEnv('CIRCLE_BRANCH');
+var setModulusProject = function(options) {
+  if (options.github_branches) {
+    if (options.projects) return;
+    options.projects = options.github_branches.map(getModulusProject).filter(function(i) {return i});
+  } else {
+    if (options.project) return;
+    options.project = getModulusProject();
+  }
+}
+
+var getModulusProject = function(branch) {
+  branch || (branch = getEnv('CIRCLE_BRANCH'));
   if (branch == 'master') return null;
 
   return branch;
 };
 
-var getS3BucketName = function() {
-  var branch = getEnv('CIRCLE_BRANCH');
+var setS3BucketName = function(options) {
+  if (options.github_branches) {
+    if (options.bucket_names) return;
+    options.bucket_names = options.github_branches.map(getS3BucketName).filter(function(i) {return i});
+  } else {
+    if (options.bucket_name) return;
+    options.bucket_name = getS3BucketName();
+  }
+}
+
+var getS3BucketName = function(branch) {
+  branch || (branch = getEnv('CIRCLE_BRANCH'));
   if (branch == 'master') return null;
 
   var parts = [getEnv('CIRCLE_PROJECT_USERNAME'), getEnv('CIRCLE_PROJECT_REPONAME'), branch];

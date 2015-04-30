@@ -105,4 +105,21 @@ describe('utils/cli', function() {
       cli.circleciDeployGitHubPullRequest(done);
     });
   });
+
+  it('.circleciWithdrawClosedGitHubPullRequests()', function(done) {
+    process.argv = ['node', 'script', '--options-from=test/utils/cli-test-options.js'];
+
+    var mock_circleci = this.sinon.mock(circleci);
+    mock_circleci.expects('getGitHubOptions').returns('github');
+
+    var mock_github_api = this.sinon.mock(github_api);
+    mock_github_api.expects('getClosedPullRequests').withArgs('github').yields([{head: {ref: 'branch1'}}, {head: {ref: 'branch2'}}]);
+
+    mock_circleci.expects('getDeployerOptions').withArgs({service: 'modulus', project: 'myproject', github_branches: ['branch1', 'branch2']}).returns('deployer');
+
+    var mock_qa_deployer = this.sinon.mock(qa_deployer);
+    mock_qa_deployer.expects('withdraw').withArgs({deployer: 'deployer'}).yields();
+
+    cli.circleciWithdrawClosedGitHubPullRequests(done);
+  });
 });
