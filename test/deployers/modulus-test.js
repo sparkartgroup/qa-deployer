@@ -132,5 +132,33 @@ describe('deployers/modulus', function() {
         done();
       });
     });
+
+    describe('with multiple projects', function() {
+      beforeEach(function() {
+        options.projects = ['theProject1', 'theProject2', 'theProject3', 'theProject4'];
+      });
+
+      it('stops matching running projects', function(done) {
+        var mock_modulus_cli = this.sinon.mock(modulus_cli);
+
+        // authenticateUser
+        mock_modulus_cli.expects('command').withArgs(['login', '--username', 'me', '--password', 'thePassword']).yields();
+        nocks.push(nock('https://api.onmodulus.net').post('/user/authenticate', {login: 'me', password: HASHED_PASSWORD}).reply(200, {id: 123, authToken: 'theToken'}));
+
+        // stopProjects
+        var existing_projects = [
+          {name: 'theProject1', id: 54321, status: 'RUNNING'},
+          {name: 'theProject2', id: 65432, status: 'RUNNING'},
+          {name: 'theProject3', id: 76543, status: 'STOPPED'}
+        ];
+        nocks.push(nock('https://api.onmodulus.net').get('/user/123/projects?authToken=theToken').reply(200, existing_projects));
+        nocks.push(nock('https://api.onmodulus.net').get('/project/54321/stop?authToken=theToken').reply(200, {name: 'theProject1', id: 54321, status: 'STOPPING'}));
+        nocks.push(nock('https://api.onmodulus.net').get('/project/65432/stop?authToken=theToken').reply(200, {name: 'theProject2', id: 65432, status: 'STOPPING'}));
+
+        modulus.init(options).withdraw(function() {
+          done();
+        });
+      });
+    });
   });
 });

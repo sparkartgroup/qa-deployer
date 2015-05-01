@@ -173,3 +173,23 @@ deployment:
     commands:
       - circleci-deploy-github-pull-request --options-from=qa-deployer.json
 ```
+
+### circleci-withdraw-closed-github-pull-requests ###
+
+The [circleci-deploy-github-pull-request](#circleci-deploy-github-pull-request) script withdraws the current branch from the deployer service when its corresponding GitHub pull request is closed. Unfortunately, CircleCI does not run a build when a branch is deleted, so the withdrawal never happens when a GitHub pull request is closed and its branch is deleted at the same time.
+
+This script takes care of that missed cleanup: it retrieves a list of all closed GitHub pull requests, and withdraws all matching projects from the deployer service.
+
+Example `circle.yml` configuration file, to cleanup old projects whenever commits are made to `master`:
+
+```yaml
+dependencies:
+  post:
+    - npm install qa-deployer -g
+deployment:
+  production:
+    branch: master
+    commands:
+      - circleci-deploy --options-from=production-deployer.json
+      - circleci-withdraw-closed-github-pull-requests --options-from=production-deployer.json
+```

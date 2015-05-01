@@ -6,6 +6,10 @@ exports.getPullRequestByBranch = function(options, callback) {
   });
 };
 
+exports.getClosedPullRequests = function(options, callback) {
+  json_request.get(apiUrl(options, 'pulls?state=closed&per_page=100'), {auth: options.auth}, callback);
+};
+
 exports.commentPullRequest = function(options, comment, callback) {
   json_request.post(apiUrl(options, 'issues/' + options.pull_request + '/comments'), {auth: options.auth, body: {body: comment}}, callback);
 };
