@@ -5,7 +5,7 @@ exports.init = function(options) {
     var body = options.body ? options.body(review_url) : {review_url: review_url};
 
     console.log('Notifying webhook: ' + options.url);
-    json_request.post(options.url, {body: body}, function(body) {
+    json_request[options.method || 'post'](options.url, {headers: options.headers, body: body}, function(body) {
       callback();
     });
   };

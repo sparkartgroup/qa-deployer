@@ -1,3 +1,7 @@
+## Unreleased
+
+ - Add `method` and `headers` options to webhook notifier
+
 ## 2.1.1 (Feb 23, 2015)
 
  - Use latest s3-site [[9abaf3b](https://github.com/SparkartGroupInc/qa-deployer/commit/9abaf3b9b56b450848c533a95d9771fce6dd0a39)]
