@@ -60,8 +60,8 @@ module.exports.circleciWithdrawClosedGitHubPullRequests = function(callback) {
   var github_options = circleci.getGitHubOptions();
 
   console.log('Retrieving closed GitHub pull requests');
-  github_api.getClosedPullRequests(github_options, function(pull_requests) {
-    cli_options.deployer.github_branches = pull_requests.map(function(pr) {return pr.head.ref});
+  github_api.getClosedPullRequestsBranches(github_options, function(branches) {
+    cli_options.deployer.github_branches = branches;
     var qa_deployer_options = {
       deployer: circleci.getDeployerOptions(cli_options.deployer)
     };

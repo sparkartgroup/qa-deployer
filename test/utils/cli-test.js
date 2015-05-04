@@ -113,7 +113,7 @@ describe('utils/cli', function() {
     mock_circleci.expects('getGitHubOptions').returns('github');
 
     var mock_github_api = this.sinon.mock(github_api);
-    mock_github_api.expects('getClosedPullRequests').withArgs('github').yields([{head: {ref: 'branch1'}}, {head: {ref: 'branch2'}}]);
+    mock_github_api.expects('getClosedPullRequestsBranches').withArgs('github').yields(['branch1', 'branch2']);
 
     mock_circleci.expects('getDeployerOptions').withArgs({service: 'modulus', project: 'myproject', github_branches: ['branch1', 'branch2']}).returns('deployer');
 

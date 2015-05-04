@@ -6,8 +6,15 @@ exports.getPullRequestByBranch = function(options, callback) {
   });
 };
 
-exports.getClosedPullRequests = function(options, callback) {
-  json_request.get(apiUrl(options, 'pulls?state=closed&per_page=100'), {auth: options.auth}, callback);
+exports.getClosedPullRequestsBranches = function(options, callback) {
+  json_request.get(apiUrl(options, 'pulls?state=closed&per_page=100'), {auth: options.auth}, function(closed) {
+    json_request.get(apiUrl(options, 'pulls?state=open&per_page=100'), {auth: options.auth}, function(open) {
+      // Do not return the branch of a closed pull request if that branch also has another open pull request
+      closed = closed.map(function(pr) {return pr.head.ref});
+      open   = open.map(function(pr) {return pr.head.ref});
+      callback(closed.filter(function(b) {return open.indexOf(b) === -1}));
+    });
+  });
 };
 
 exports.commentPullRequest = function(options, comment, callback) {
