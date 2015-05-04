@@ -1,3 +1,7 @@
+## 2.2.1 (May 4, 2015)
+
+ - Do not withdraw the project for the branch of a closed pull request if that branch also has another open pull request [[8b95857](https://github.com/SparkartGroupInc/qa-deployer/commit/8b958579ffc7620d82c153dc69a86cf83ef9f1b5)]
+
 ## 2.2.0 (May 1, 2015)
 
  - Add `method` and `headers` options to webhook notifier [[d02c723](https://github.com/SparkartGroupInc/qa-deployer/commit/d02c723cf8961a180ea2812bd298289248e633f8)]
