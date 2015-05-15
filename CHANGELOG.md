@@ -1,3 +1,8 @@
+## 2.3.0 (May 15, 2015)
+
+- Adds support for passing environment variables to Modulus with the `env` property in `deployer` options.
+[[8c9640a](https://github.com/SparkartGroupInc/qa-deployer/commit/8c9640ad34732fc65a0b733550dfb04e3cab1faa)]
+
 ## 2.2.1 (May 4, 2015)
 
  - Do not withdraw the project for the branch of a closed pull request if that branch also has another open pull request [[8b95857](https://github.com/SparkartGroupInc/qa-deployer/commit/8b958579ffc7620d82c153dc69a86cf83ef9f1b5)]
