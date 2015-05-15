@@ -99,7 +99,7 @@ Notifiers can be enabled by adding an options file. This JSON formatted file can
     "service": "modulus",
     "include_modules": true,
     "env": {
-      NPM_AUTH_TOKEN: "sample-token-value"
+      "NPM_AUTH_TOKEN": "sample-token-value"
     }
   },
   "notifiers": [
