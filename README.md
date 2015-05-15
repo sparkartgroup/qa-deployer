@@ -37,6 +37,7 @@ Deploys the current package to [Modulus](https://modulus.io/).
  - `auth` - An object with the Modulus account's `username` and `password`.
  - `project` - The Modulus project where to upload the package. If the project is missing, it will be automatically created. Optional, defaults to the current directory name.
  - `include_modules` - Whether to upload the `node_modules` folder. Optional, defaults to `false`.
+ - `env` - An object with environment variables and their values to be set in the Modulus environment.
 
 ### s3-static-website ###
 
@@ -96,7 +97,10 @@ Notifiers can be enabled by adding an options file. This JSON formatted file can
 {
   "deployer": {
     "service": "modulus",
-    "include_modules": true
+    "include_modules": true,
+    "env" {
+      NPM_AUTH_TOKEN: "sample-token-value"
+    }
   },
   "notifiers": [
     {"service": "github-pull-request"},
