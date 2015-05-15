@@ -98,7 +98,7 @@ Notifiers can be enabled by adding an options file. This JSON formatted file can
   "deployer": {
     "service": "modulus",
     "include_modules": true,
-    "env" {
+    "env": {
       NPM_AUTH_TOKEN: "sample-token-value"
     }
   },
