@@ -15,7 +15,10 @@ describe('deployers/modulus', function() {
   beforeEach(function() {
     options = {
       auth: {username: 'me', password: 'thePassword'},
-      project: 'theProject'
+      project: 'theProject',
+      env: {
+        TEST_VAR: 'testvalue'
+      }
     };
     nocks = [];
     nock.disableNetConnect();
@@ -53,6 +56,9 @@ describe('deployers/modulus', function() {
       nocks.push(nock('https://api.onmodulus.net').get('/user/123/projects?authToken=theToken').reply(200, []));
       nocks.push(nock('https://api.onmodulus.net').post('/project/create?authToken=theToken', {name: 'theProject', creator: 123}).reply(200, {name: 'theProject'}));
 
+      // setEnvironmentVariables
+      mock_modulus_cli.expects('command').withArgs(['env', 'set', 'TEST_VAR', 'testvalue', '-p', 'theProject']).yields();
+      
       // deployProject
       mock_modulus_cli.expects('command').withArgs(['deploy', '-p', 'theProject']).yields();
       nocks.push(nock('https://api.onmodulus.net').get('/user/123/projects?authToken=theToken').reply(200, [{name: 'theProject', domain: 'review/url'}]));
@@ -74,6 +80,9 @@ describe('deployers/modulus', function() {
       // createProjectIfMissing
       nocks.push(nock('https://api.onmodulus.net').get('/user/123/projects?authToken=theToken').reply(200, [{name: 'theProject'}]));
 
+      // setEnvironmentVariables
+      mock_modulus_cli.expects('command').withArgs(['env', 'set', 'TEST_VAR', 'testvalue', '-p', 'theProject']).yields();
+      
       // deployProject
       mock_modulus_cli.expects('command').withArgs(['deploy', '-p', 'theProject']).yields();
       nocks.push(nock('https://api.onmodulus.net').get('/user/123/projects?authToken=theToken').reply(200, [{name: 'theProject', domain: 'review/url'}]));
