@@ -10,7 +10,7 @@ exports.init = function(options) {
   var review_url;
 
   var deploy = function(callback) {
-    async.series([authenticateUser, createProjectIfMissing, deployProject], function() {
+    async.series([authenticateUser, createProjectIfMissing, setEnvironmentVariables, deployProject], function() {
       callback(redeploy, review_url);
     });
   };
@@ -46,6 +46,14 @@ exports.init = function(options) {
         });
       }
     });
+  };
+
+  var setEnvironmentVariables = function(callback) {
+    if (!options.env) return callback();
+    console.log('Setting environment variables.');
+    async.each(Object.keys(options.env), function(key, next) {
+      modulus_cli.command(['env', 'set', key, options.env[key], '-p', options.project], next);
+    }, callback);
   };
 
   var deployProject = function(callback) {
