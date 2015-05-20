@@ -14,6 +14,10 @@ exports.deploy = function(options, callback) {
   exports.command(args, callback);
 };
 
+exports.delete = function(options, callback) {
+  exports.command(['project', 'delete', '-p', options.project], callback);
+};
+
 exports.command = function(args, callback) {
   var child_process = spawn(modulus, args);
 

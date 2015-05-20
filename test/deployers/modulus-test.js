@@ -58,7 +58,7 @@ describe('deployers/modulus', function() {
 
       // setEnvironmentVariables
       mock_modulus_cli.expects('command').withArgs(['env', 'set', 'TEST_VAR', 'testvalue', '-p', 'theProject']).yields();
-      
+
       // deployProject
       mock_modulus_cli.expects('command').withArgs(['deploy', '-p', 'theProject']).yields();
       nocks.push(nock('https://api.onmodulus.net').get('/user/123/projects?authToken=theToken').reply(200, [{name: 'theProject', domain: 'review/url'}]));
@@ -82,7 +82,7 @@ describe('deployers/modulus', function() {
 
       // setEnvironmentVariables
       mock_modulus_cli.expects('command').withArgs(['env', 'set', 'TEST_VAR', 'testvalue', '-p', 'theProject']).yields();
-      
+
       // deployProject
       mock_modulus_cli.expects('command').withArgs(['deploy', '-p', 'theProject']).yields();
       nocks.push(nock('https://api.onmodulus.net').get('/user/123/projects?authToken=theToken').reply(200, [{name: 'theProject', domain: 'review/url'}]));
@@ -96,45 +96,30 @@ describe('deployers/modulus', function() {
   });
 
   describe('.withdraw()', function() {
-    it('stops an existing running project', function(done) {
+    it('deletes an existing project', function(done) {
       var mock_modulus_cli = this.sinon.mock(modulus_cli);
 
       // authenticateUser
       mock_modulus_cli.expects('command').withArgs(['login', '--username', 'me', '--password', 'thePassword']).yields();
       nocks.push(nock('https://api.onmodulus.net').post('/user/authenticate', {login: 'me', password: HASHED_PASSWORD}).reply(200, {id: 123, authToken: 'theToken'}));
 
-      // stopProject
-      nocks.push(nock('https://api.onmodulus.net').get('/user/123/projects?authToken=theToken').reply(200, [{name: 'theProject', id: 54321, status: 'RUNNING'}]));
-      nocks.push(nock('https://api.onmodulus.net').get('/project/54321/stop?authToken=theToken').reply(200, {name: 'theProject', id: 54321, status: 'STOPPING'}));
+      // deleteProject
+      nocks.push(nock('https://api.onmodulus.net').get('/user/123/projects?authToken=theToken').reply(200, [{name: 'theProject', id: 54321}]));
+      mock_modulus_cli.expects('command').withArgs(['project', 'delete', '-p', 'theProject']).yields();
 
       modulus.init(options).withdraw(function() {
         done();
       });
     });
 
-    it('does not stop an existing non-running project', function(done) {
+    it('does not delete a non-existing project', function(done) {
       var mock_modulus_cli = this.sinon.mock(modulus_cli);
 
       // authenticateUser
       mock_modulus_cli.expects('command').withArgs(['login', '--username', 'me', '--password', 'thePassword']).yields();
       nocks.push(nock('https://api.onmodulus.net').post('/user/authenticate', {login: 'me', password: HASHED_PASSWORD}).reply(200, {id: 123, authToken: 'theToken'}));
 
-      // stopProject
-      nocks.push(nock('https://api.onmodulus.net').get('/user/123/projects?authToken=theToken').reply(200, [{name: 'theProject', id: 54321, status: 'STOPPED'}]));
-
-      modulus.init(options).withdraw(function() {
-        done();
-      });
-    });
-
-    it('does not stop a non-existing project', function(done) {
-      var mock_modulus_cli = this.sinon.mock(modulus_cli);
-
-      // authenticateUser
-      mock_modulus_cli.expects('command').withArgs(['login', '--username', 'me', '--password', 'thePassword']).yields();
-      nocks.push(nock('https://api.onmodulus.net').post('/user/authenticate', {login: 'me', password: HASHED_PASSWORD}).reply(200, {id: 123, authToken: 'theToken'}));
-
-      // stopProject
+      // deleteProject
       nocks.push(nock('https://api.onmodulus.net').get('/user/123/projects?authToken=theToken').reply(200, []));
 
       modulus.init(options).withdraw(function() {
@@ -144,25 +129,25 @@ describe('deployers/modulus', function() {
 
     describe('with multiple projects', function() {
       beforeEach(function() {
-        options.projects = ['theProject1', 'theProject2', 'theProject3', 'theProject4'];
+        options.projects = ['theProject1', 'theProject2', 'theProject3'];
       });
 
-      it('stops matching running projects', function(done) {
+      it('deletes matching projects', function(done) {
         var mock_modulus_cli = this.sinon.mock(modulus_cli);
 
         // authenticateUser
         mock_modulus_cli.expects('command').withArgs(['login', '--username', 'me', '--password', 'thePassword']).yields();
         nocks.push(nock('https://api.onmodulus.net').post('/user/authenticate', {login: 'me', password: HASHED_PASSWORD}).reply(200, {id: 123, authToken: 'theToken'}));
 
-        // stopProjects
+        // deleteProjects
         var existing_projects = [
-          {name: 'theProject1', id: 54321, status: 'RUNNING'},
-          {name: 'theProject2', id: 65432, status: 'RUNNING'},
-          {name: 'theProject3', id: 76543, status: 'STOPPED'}
+          {name: 'theProject1', id: 54321},
+          {name: 'theProject2', id: 65432},
+          {name: 'theProject4', id: 76543}
         ];
         nocks.push(nock('https://api.onmodulus.net').get('/user/123/projects?authToken=theToken').reply(200, existing_projects));
-        nocks.push(nock('https://api.onmodulus.net').get('/project/54321/stop?authToken=theToken').reply(200, {name: 'theProject1', id: 54321, status: 'STOPPING'}));
-        nocks.push(nock('https://api.onmodulus.net').get('/project/65432/stop?authToken=theToken').reply(200, {name: 'theProject2', id: 65432, status: 'STOPPING'}));
+        mock_modulus_cli.expects('command').withArgs(['project', 'delete', '-p', 'theProject1']).yields();
+        mock_modulus_cli.expects('command').withArgs(['project', 'delete', '-p', 'theProject2']).yields();
 
         modulus.init(options).withdraw(function() {
           done();
