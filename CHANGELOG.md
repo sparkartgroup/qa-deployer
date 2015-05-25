@@ -1,3 +1,7 @@
+## 2.3.1 (May 25, 2015)
+
+- Do not delete existing S3 bucket on redeploy [[13cabba](https://github.com/SparkartGroupInc/qa-deployer/commit/13cabbac8a6cd0c48d95ec03d04b1c1d3d392f4f)]
+
 ## 2.3.0 (May 15, 2015)
 
 - Adds support for passing environment variables to Modulus with the `env` property in `deployer` options.

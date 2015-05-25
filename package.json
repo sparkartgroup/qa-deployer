@@ -1,6 +1,6 @@
 {
   "name": "qa-deployer",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "description": "Deploy a package to a hosting service for easy review",
   "main": "qa-deployer.js",
   "bin": {
