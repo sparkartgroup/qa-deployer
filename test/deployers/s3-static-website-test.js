@@ -41,7 +41,10 @@ describe('deployers/s3-static-website', function() {
   describe('.deploy()', function() {
     it('deploys to a new website', function(done) {
       mock_bucket.expects('verifyExistence').yields('Does not exist');
-      mock_bucket.expects('deploy').yields();
+      mock_bucket.expects('createBucket').yields();
+      mock_bucket.expects('makeWebsite').yields();
+      mock_bucket.expects('makePublic').yields();
+      mock_bucket.expects('upload').yields();
 
       var s3 = s3_static_website.init(options);
       s3.deploy(function(redeploy, review_url) {
@@ -53,7 +56,11 @@ describe('deployers/s3-static-website', function() {
 
     it('deploys to an existing website', function(done) {
       mock_bucket.expects('verifyExistence').yields();
-      mock_bucket.expects('deploy').yields();
+      mock_bucket.expects('listContents').yields(null, [1, 2, 3]);
+      mock_bucket.expects('removeContents').withArgs([1, 2, 3]).yields();
+      mock_bucket.expects('makeWebsite').yields();
+      mock_bucket.expects('makePublic').yields();
+      mock_bucket.expects('upload').yields();
 
       var s3 = s3_static_website.init(options);
       s3.deploy(function(redeploy, review_url) {

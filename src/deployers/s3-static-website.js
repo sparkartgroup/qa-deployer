@@ -28,12 +28,28 @@ exports.init = function(options) {
       if (err && err !== 'Does not exist') throw err;
       var redeploy = !err;
 
-      bucket.deploy(function(err) {
-        if (err) throw err;
-        var review_url = 'http://' + options.bucket_name + '.s3-website-' + options.region + '.amazonaws.com';
+      async.series(
+        [
+          function(callback) {
+            if (redeploy) {
+              bucket.listContents(function(err, contents) {
+                err ? callback(err) : bucket.removeContents(contents, callback);
+              });
+            } else {
+              bucket.createBucket(callback);
+            }
+          },
+          function(callback) {bucket.makeWebsite(callback)},
+          function(callback) {bucket.makePublic(callback)},
+          function(callback) {bucket.upload(callback)}
+        ],
+        function(err) {
+          if (err) throw err;
+          var review_url = 'http://' + options.bucket_name + '.s3-website-' + options.region + '.amazonaws.com';
 
-        callback(redeploy, review_url);
-      });
+          callback(redeploy, review_url);
+        }
+      );
     });
   };
 
