@@ -1,3 +1,7 @@
+## 2.4.0 (Jul 7, 2015)
+
+- Delete Modulus projects instead of just stopping them [[3ca0fae](https://github.com/SparkartGroupInc/qa-deployer/commit/3ca0fae675efb9626a299f48ce4e8dde1d11c101)]
+
 ## 2.3.1 (May 25, 2015)
 
 - Do not delete existing S3 bucket on redeploy [[13cabba](https://github.com/SparkartGroupInc/qa-deployer/commit/13cabbac8a6cd0c48d95ec03d04b1c1d3d392f4f)]
