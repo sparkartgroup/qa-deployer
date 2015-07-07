@@ -16,7 +16,7 @@ exports.init = function(options) {
   };
 
   var withdraw = function(callback) {
-    var fn = options.projects ? stopProjects : stopProject;
+    var fn = options.projects ? deleteProjects : deleteProject;
     async.series([authenticateUser, fn], function() {
       callback();
     });
@@ -69,11 +69,11 @@ exports.init = function(options) {
     });
   };
 
-  var stopProject = function(callback) {
-    console.log('Stopping Modulus project: ' + options.project);
+  var deleteProject = function(callback) {
+    console.log('Deleting Modulus project: ' + options.project);
     modulus_api.getProjectByName(options, function(project) {
-      if (project && project.status === 'RUNNING') {
-        modulus_api.stopProject(options, project, function() {
+      if (project) {
+        modulus_cli.delete(options, function() {
           callback();
         });
       } else {
@@ -82,13 +82,14 @@ exports.init = function(options) {
     });
   };
 
-  var stopProjects = function(callback) {
+  var deleteProjects = function(callback) {
     console.log('Retrieving Modulus projects');
     modulus_api.getProjects(options, function(projects) {
-      async.each(projects, function(project, callback) {
-        if (project.status === 'RUNNING' && options.projects.indexOf(project.name) > -1) {
-          console.log('Stopping Modulus project: ' + project.name);
-          modulus_api.stopProject(options, project, function() {
+      async.eachSeries(projects, function(project, callback) {
+        if (options.projects.indexOf(project.name) > -1) {
+          console.log('Deleting Modulus project: ' + project.name);
+          options.project = project.name;
+          modulus_cli.delete(options, function() {
             callback();
           });
         } else {
